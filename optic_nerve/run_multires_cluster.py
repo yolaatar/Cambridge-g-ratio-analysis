@@ -25,6 +25,8 @@ os.environ["nnUNet_results"]      = str(Path.home() / "nnUNet_results")
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 import torch
 
+Image.MAX_IMAGE_PIXELS = None  # disable decompression bomb check for large TIFs
+
 
 def run_image(tif: Path, predictor, tmp_root: Path):
     name = tif.stem  # e.g. image_706
