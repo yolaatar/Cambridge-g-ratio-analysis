@@ -42,7 +42,7 @@ def run_image(tif: Path, predictor, tmp_root: Path):
     tmp_in.mkdir(parents=True, exist_ok=True)
     tmp_out.mkdir(parents=True, exist_ok=True)
 
-    shutil.copy2(tif, tmp_in / f"{name}_0000.tif")
+    Image.open(tif).convert("L").save(tmp_in / f"{name}_0000.png")
 
     print(f"  {name}: running inference...", flush=True)
     predictor.predict_from_files(
