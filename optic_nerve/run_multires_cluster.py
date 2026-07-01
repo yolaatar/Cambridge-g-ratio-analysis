@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     predictor = nnUNetPredictor(
         tile_step_size=0.5, use_gaussian=True, use_mirroring=True,
-        perform_everything_on_gpu=True, device=device, verbose=False)
+        device=device, verbose=False)
     predictor.initialize_from_trained_model_folder(
         str(MODEL_DIR), use_folds=(0,), checkpoint_name=CHECKPOINT)
     print("Model loaded.\n")
