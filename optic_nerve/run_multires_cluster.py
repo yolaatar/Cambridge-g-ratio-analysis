@@ -13,7 +13,7 @@ import numpy as np
 from pathlib import Path
 from PIL import Image
 
-MODEL_DIR = Path("/mnt/duke/temp/yolaatar/nnunet_resinv/nnUNet_results/Dataset005_TEM12_multires")
+MODEL_DIR = Path.home() / "multires_model"
 RAW_DIR   = Path.home() / "cambridge_data" / "Optic nerve raw"
 OUT_DIR   = Path.home() / "cambridge_on"
 CHECKPOINT = "checkpoint_best.pth"
