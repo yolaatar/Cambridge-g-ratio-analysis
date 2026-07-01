@@ -44,7 +44,13 @@ def run_image(tif: Path, predictor, tmp_root: Path):
     tmp_in.mkdir(parents=True, exist_ok=True)
     tmp_out.mkdir(parents=True, exist_ok=True)
 
-    Image.open(tif).convert("L").save(tmp_in / f"{name}_0000.png")
+    img = Image.open(tif).convert("L")
+    # downsample to ~6700px wide to match 4.93 nm/px working resolution
+    TARGET_W = 6700
+    if img.width > TARGET_W:
+        scale = TARGET_W / img.width
+        img = img.resize((TARGET_W, int(img.height * scale)), Image.LANCZOS)
+    img.save(tmp_in / f"{name}_0000.png")
 
     print(f"  {name}: running inference...", flush=True)
     predictor.predict_from_files(
