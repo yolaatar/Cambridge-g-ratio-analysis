@@ -1,17 +1,21 @@
 """
 Multires inference on all Optic Nerve images.
-Run on tassan from ~/cambridge_on/ with:
-    python run_multires_cluster.py
-Outputs: seg_axon_multires.png, seg_myelin_multires.png per image dir.
+Input:  ~/cambridge_data/Optic nerve raw/image_*.tif
+Output: ~/cambridge_on/image_<id>/seg_axon_multires.png
+                                   seg_myelin_multires.png
+
+Run on tassan:
+    python optic_nerve/run_multires_cluster.py
 """
 
-import os, sys, shutil, tempfile
+import os, shutil, tempfile
 import numpy as np
 from pathlib import Path
 from PIL import Image
 
 MODEL_DIR = Path("/duke/temp/yolaatar/nnunet_resinv/nnUNet_results/Dataset005_TEM12_multires")
-DATA_DIR  = Path.home() / "cambridge_on"
+RAW_DIR   = Path.home() / "cambridge_data" / "Optic nerve raw"
+OUT_DIR   = Path.home() / "cambridge_on"
 CHECKPOINT = "checkpoint_best.pth"
 
 os.environ["nnUNet_raw"]          = str(Path.home() / "nnUNet_raw")
@@ -21,15 +25,14 @@ os.environ["nnUNet_results"]      = str(Path.home() / "nnUNet_results")
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 import torch
 
-def run_image(img_dir: Path, predictor, tmp_root: Path):
-    name = img_dir.name
-    inp  = img_dir / "input.png"
-    if not inp.exists():
-        print(f"  {name}: no input.png, skipping.")
-        return
 
-    axon_out   = img_dir / "seg_axon_multires.png"
-    myelin_out = img_dir / "seg_myelin_multires.png"
+def run_image(tif: Path, predictor, tmp_root: Path):
+    name = tif.stem  # e.g. image_706
+    img_out = OUT_DIR / name
+    img_out.mkdir(parents=True, exist_ok=True)
+
+    axon_out   = img_out / "seg_axon_multires.png"
+    myelin_out = img_out / "seg_myelin_multires.png"
     if axon_out.exists() and myelin_out.exists():
         print(f"  {name}: already done, skipping.")
         return
@@ -39,7 +42,7 @@ def run_image(img_dir: Path, predictor, tmp_root: Path):
     tmp_in.mkdir(parents=True, exist_ok=True)
     tmp_out.mkdir(parents=True, exist_ok=True)
 
-    shutil.copy2(inp, tmp_in / f"{name}_0000.png")
+    shutil.copy2(tif, tmp_in / f"{name}_0000.tif")
 
     print(f"  {name}: running inference...", flush=True)
     predictor.predict_from_files(
@@ -49,7 +52,7 @@ def run_image(img_dir: Path, predictor, tmp_root: Path):
 
     pred_file = tmp_out / f"{name}.png"
     if not pred_file.exists():
-        print(f"  {name}: ERROR - no prediction output found.")
+        print(f"  {name}: ERROR - prediction output not found.")
         return
 
     pred   = np.array(Image.open(pred_file))
@@ -62,12 +65,13 @@ def run_image(img_dir: Path, predictor, tmp_root: Path):
     shutil.rmtree(tmp_in,  ignore_errors=True)
     shutil.rmtree(tmp_out, ignore_errors=True)
 
+
 if __name__ == "__main__":
-    img_dirs = sorted(
-        [d for d in DATA_DIR.iterdir() if d.is_dir() and d.name.startswith("image_")],
-        key=lambda d: int(d.name.replace("image_", ""))
+    tifs = sorted(
+        [f for f in RAW_DIR.glob("image_*.tif")],
+        key=lambda f: int(f.stem.replace("image_", ""))
     )
-    print(f"Found {len(img_dirs)} image directories.")
+    print(f"Found {len(tifs)} images in {RAW_DIR}")
 
     device = torch.device("cuda", 0) if torch.cuda.is_available() else torch.device("cpu")
     print(f"Using device: {device}")
@@ -81,8 +85,8 @@ if __name__ == "__main__":
 
     tmp_root = Path(tempfile.mkdtemp(prefix="multires_"))
     try:
-        for img_dir in img_dirs:
-            run_image(img_dir, predictor, tmp_root)
+        for tif in tifs:
+            run_image(tif, predictor, tmp_root)
     finally:
         shutil.rmtree(tmp_root, ignore_errors=True)
 
