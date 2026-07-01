@@ -80,7 +80,7 @@ if __name__ == "__main__":
         tile_step_size=0.5, use_gaussian=True, use_mirroring=True,
         device=device, verbose=False)
     predictor.initialize_from_trained_model_folder(
-        str(MODEL_DIR), use_folds=(0,), checkpoint_name=CHECKPOINT)
+        str(MODEL_DIR), use_folds=("all",), checkpoint_name=CHECKPOINT)
     print("Model loaded.\n")
 
     tmp_root = Path(tempfile.mkdtemp(prefix="multires_"))
