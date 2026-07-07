@@ -16,7 +16,7 @@ import numpy as np
 Image.MAX_IMAGE_PIXELS = None
 
 MODEL_DIR   = Path.home() / "nnunet_results/Dataset005_TEM12_multires/nnUNetTrainer__nnUNetPlans__2d"
-RAW_DIR     = Path.home() / "cambridge_inputs_raw"   # where you put the TIFs on tassan
+RAW_DIR     = Path.home() / "Optic nerve"   # unzipped from optic_nerve_june2026.zip
 TEST_IMAGE  = "image_2336.tif"
 OUT_DIR     = Path.home() / "cambridge_inputs" / "image_2336"
 CHECKPOINT  = "checkpoint_final.pth"
